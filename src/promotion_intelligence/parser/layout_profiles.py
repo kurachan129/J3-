@@ -34,13 +34,16 @@ COMMON_METRIC_PAGES = {
 PROFILES: dict[ReportLayout, LayoutProfile] = {
     ReportLayout.DATASTADIUM_2024: LayoutProfile(
         layout=ReportLayout.DATASTADIUM_2024,
-        expected_page_count=(17,),
+        expected_page_count=(16, 17),
         metric_pages=COMMON_METRIC_PAGES,
         page1_labels={
             "opponent_half_possession": ("保持割合", "相手陣保持割合"),
             "distance": ("総移動距離",),
         },
-        notes=("Base 2024 Match Report layout",),
+        notes=(
+            "2024 Match Reports may contain 16 or 17 pages",
+            "Required KPI pages remain 1, 3, 7, 8 and 9 in both variants",
+        ),
     ),
     ReportLayout.DATASTADIUM_2025: LayoutProfile(
         layout=ReportLayout.DATASTADIUM_2025,
