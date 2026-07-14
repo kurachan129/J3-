@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "promotion-intelligence"
-version = "0.1.0"
+version = "1.0.0"
 description = "J3 promotion match report parser and analysis engine"
 readme = "README.md"
 requires-python = ">=3.11"

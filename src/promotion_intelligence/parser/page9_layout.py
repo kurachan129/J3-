@@ -144,7 +144,7 @@ def parse_page9(pdf_path: Path) -> Page9Metrics:
         "defensive_actions": _metric_pair(words, "守備プレー"),
         "clearances": _metric_pair(words, "クリア"),
         "own_pa_clearances": _metric_pair(words, "自陣PA内クリア"),
-        "blocks": _metric_pair(words, "ブロック"),
+        "blocks": _metric_pair(words, "ブロック（シュート）"),
         "interceptions": _metric_pair(words, "インターセプト"),
         "ball_gains_total": _metric_pair(words, "総数", occurrence=1),
         "ball_gains_at": _metric_pair(words, "AT", occurrence=0),

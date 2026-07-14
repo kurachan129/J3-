@@ -82,6 +82,15 @@ def _metric_pair(words: list[Word], label: str) -> tuple[float | None, float | N
     return left, right
 
 
+def _metric_pair_any(
+    words: list[Word], labels: tuple[str, ...]
+) -> tuple[float | None, float | None]:
+    for label in labels:
+        if _label_word(words, label) is not None:
+            return _metric_pair(words, label)
+    return None, None
+
+
 def _shots_pair(words: list[Word]) -> tuple[tuple[int | None, int | None], tuple[int | None, int | None]]:
     label = _label_word(words, "シュート")
     if label is None:
@@ -95,6 +104,31 @@ def _shots_pair(words: list[Word]) -> tuple[tuple[int | None, int | None], tuple
         return int(match.group("shots")), int(match.group("sot"))
 
     return parse(_side_tokens(words, label, side="left")), parse(_side_tokens(words, label, side="right"))
+
+
+def _passes_pair(
+    words: list[Word],
+) -> tuple[tuple[int | None, float | None], tuple[int | None, float | None]]:
+    label = _label_word(words, "パス")
+    if label is None:
+        return (None, None), (None, None)
+
+    def parse(tokens: list[Word]) -> tuple[int | None, float | None]:
+        count: int | None = None
+        success_pct: float | None = None
+        for token in tokens:
+            value = _number(token.text)
+            if value is None:
+                continue
+            if "%" in token.text:
+                success_pct = value
+            elif count is None:
+                count = int(value)
+        return count, success_pct
+
+    return parse(_side_tokens(words, label, side="left")), parse(
+        _side_tokens(words, label, side="right")
+    )
 
 
 def _count(value: float | None) -> int | None:
@@ -112,13 +146,13 @@ def parse_page1(pdf_path: Path) -> ParsedMatch:
 
     identity, home_goals, away_goals = _header(text, pdf_path.name)
     possession = _metric_pair(words, "ボール保持率")
-    opponent_half = _metric_pair(words, "保持割合")
+    opponent_half = _metric_pair_any(words, ("相手陣保持割合", "保持割合"))
     shots = _shots_pair(words)
     xg = _metric_pair(words, "ｘG")
     pa_entries = _metric_pair(words, "ＰＡ進入")
     final30_entries = _metric_pair(words, "30mライン進入")
     crosses = _metric_pair(words, "クロス")
-    passes = _metric_pair(words, "パス")
+    passes = _passes_pair(words)
     corners = _metric_pair(words, "CK")
     tackles = _metric_pair(words, "タックル")
     defensive_actions = _metric_pair(words, "守備プレー")
@@ -139,7 +173,8 @@ def parse_page1(pdf_path: Path) -> ParsedMatch:
             pa_entries=_count(pa_entries[index]),
             final30_entries=_count(final30_entries[index]),
             crosses=_count(crosses[index]),
-            passes=_count(passes[index]),
+            passes=passes[index][0],
+            pass_success_pct=passes[index][1],
             corners=_count(corners[index]),
             tackles=_count(tackles[index]),
             defensive_actions=_count(defensive_actions[index]),

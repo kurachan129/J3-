@@ -4,10 +4,15 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+work/
+outputs/
 .env
 *.sqlite3
 *.db
 *.parquet
-reports/
+reports/*
+!reports/regression/
+reports/regression/*
+!reports/regression/.gitkeep
 data/raw/
 .DS_Store

@@ -31,7 +31,27 @@ def _merge_side(summary: Any, *page_metrics: Any) -> dict[str, Any]:
         values = asdict(metrics)
         values.pop("source_page", None)
         values.pop("quality_flag", None)
-        output.update(values)
+        # Later metric pages provide the more detailed representation of shared
+        # fields. Keep an earlier explicit value when a detailed-page extraction
+        # is unavailable; never replace observed data with NULL.
+        for key, value in values.items():
+            if value is not None or key not in output:
+                output[key] = value
+    # Stable v1 aliases retained for consumers and verified fixtures that use the
+    # domain terminology rather than page-specific labels.
+    aliases = {
+        "crosses_total": "crosses",
+        "crosses_successful": "cross_successes",
+        "through_balls_total": "through_passes",
+        "through_balls_successful": "through_pass_successes",
+        "dribbles_total": "dribbles",
+        "dribbles_successful": "dribble_successes",
+        "near_zone_entries_total": "near_zone_total",
+        "crosses_to_shot_within_3_plays": "cross_to_shot_within_3_plays",
+        "through_passes_to_shot_within_3_plays": "through_pass_to_shot_within_3_plays",
+    }
+    for alias, canonical in aliases.items():
+        output[alias] = output.get(canonical)
     return output
 
 

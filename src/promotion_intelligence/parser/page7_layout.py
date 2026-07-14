@@ -65,7 +65,16 @@ class Page7Metrics:
     away: Page7TeamMetrics
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        payload = asdict(self)
+        for side in ("home", "away"):
+            values = payload[side]
+            values["crosses_to_shot_within_3_plays"] = values[
+                "cross_to_shot_within_3_plays"
+            ]
+            values["through_passes_to_shot_within_3_plays"] = values[
+                "through_pass_to_shot_within_3_plays"
+            ]
+        return payload
 
 
 def _words(page: fitz.Page) -> list[Word]:

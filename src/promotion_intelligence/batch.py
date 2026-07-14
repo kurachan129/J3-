@@ -4,9 +4,9 @@ import csv
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
-from promotion_intelligence.orchestrator import parse_match_report
+from promotion_intelligence.parser.orchestrator import parse_match_report
 
 
 @dataclass(frozen=True, slots=True)
@@ -17,6 +17,8 @@ class BatchResult:
     output_file: str | None
     missing_home_fields: int
     missing_away_fields: int
+    null_home_fields: tuple[str, ...] = ()
+    null_away_fields: tuple[str, ...] = ()
     error: str | None = None
 
 
@@ -55,6 +57,8 @@ def run_batch(input_dir: Path, output_dir: Path) -> list[BatchResult]:
                     output_file=str(json_path.relative_to(output_dir)),
                     missing_home_fields=len(qc.get("missing_home_fields", [])),
                     missing_away_fields=len(qc.get("missing_away_fields", [])),
+                    null_home_fields=tuple(qc.get("missing_home_fields", [])),
+                    null_away_fields=tuple(qc.get("missing_away_fields", [])),
                 )
             )
         except Exception as exc:  # Batch processing must continue after one bad PDF.
@@ -85,4 +89,63 @@ def write_qc_reports(results: list[BatchResult], output_dir: Path) -> None:
     with (output_dir / "qc_results.csv").open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows(
+            {
+                **row,
+                "null_home_fields": "|".join(row["null_home_fields"]),
+                "null_away_fields": "|".join(row["null_away_fields"]),
+            }
+            for row in rows
+        )
+
+    summary = _field_capture_summary(output_dir, results)
+    (output_dir / "qc_field_capture.json").write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    with (output_dir / "qc_field_capture.csv").open(
+        "w", encoding="utf-8-sig", newline=""
+    ) as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=("side", "field", "reports", "acquired", "nulls", "capture_rate_pct"),
+        )
+        writer.writeheader()
+        writer.writerows(summary["fields"])
+
+
+def _field_capture_summary(output_dir: Path, results: list[BatchResult]) -> dict[str, Any]:
+    field_counts: dict[tuple[str, str], list[int]] = {}
+    successful = 0
+    for result in results:
+        if result.output_file is None:
+            continue
+        payload = json.loads((output_dir / result.output_file).read_text(encoding="utf-8"))
+        successful += 1
+        for side in ("home", "away"):
+            for field, value in payload[side].items():
+                if field in {"team", "opponent", "home_away", "source_page", "quality_flag"}:
+                    continue
+                counts = field_counts.setdefault((side, field), [0, 0])
+                counts[0] += 1
+                if value is not None:
+                    counts[1] += 1
+
+    fields = []
+    for (side, field), (reports, acquired) in sorted(field_counts.items()):
+        fields.append(
+            {
+                "side": side,
+                "field": field,
+                "reports": reports,
+                "acquired": acquired,
+                "nulls": reports - acquired,
+                "capture_rate_pct": round(acquired / reports * 100, 1) if reports else 0.0,
+            }
+        )
+    return {
+        "reports_total": len(results),
+        "reports_successful": successful,
+        "reports_failed": len(results) - successful,
+        "fields": fields,
+    }
