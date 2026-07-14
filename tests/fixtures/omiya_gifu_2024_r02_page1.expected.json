@@ -1,0 +1,42 @@
+{
+  "identity": {
+    "season": 2024,
+    "round_no": 2,
+    "match_date": "2024-03-02",
+    "home_team": "大宮アルディージャ",
+    "away_team": "ＦＣ岐阜",
+    "source_filename": "GR_20240302_J3_02_大宮vs岐阜.pdf"
+  },
+  "home": {
+    "goals_for": 1,
+    "goals_against": 0,
+    "possession_pct": 51.2,
+    "opponent_half_possession_pct": 44.8,
+    "shots": 9,
+    "shots_on_target": 3,
+    "xg": 0.608,
+    "pa_entries": 14,
+    "final30_entries": 36,
+    "crosses": 18,
+    "passes": 439,
+    "corners": 2,
+    "tackles": 16,
+    "defensive_actions": 44
+  },
+  "away": {
+    "goals_for": 0,
+    "goals_against": 1,
+    "possession_pct": 48.8,
+    "opponent_half_possession_pct": 30.7,
+    "shots": 14,
+    "shots_on_target": 5,
+    "xg": 0.943,
+    "pa_entries": 16,
+    "final30_entries": 27,
+    "crosses": 15,
+    "passes": 444,
+    "corners": 8,
+    "tackles": 18,
+    "defensive_actions": 48
+  }
+}

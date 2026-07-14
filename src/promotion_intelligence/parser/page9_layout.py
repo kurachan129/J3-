@@ -166,7 +166,12 @@ def parse_page9(pdf_path: Path) -> Page9Metrics:
         "defensive_actions": _metric(words, ("守備プレー",), y_min=defensive.cy - 2, y_max=gains.cy),
         "clearances": _metric(words, ("クリア",), y_min=defensive.cy, y_max=gains.cy),
         "own_pa_clearances": _metric(words, ("自陣PA内クリア",), y_min=defensive.cy, y_max=gains.cy),
-        "blocks": _metric(words, ("ブロック", "ブロック（シュート）"), y_min=defensive.cy, y_max=gains.cy),
+        "blocks": _metric(
+            words,
+            ("ブロック（シュート）",),
+            y_min=defensive.cy,
+            y_max=gains.cy,
+        ),
         "interceptions": _metric(words, ("インターセプト",), y_min=defensive.cy, y_max=gains.cy),
         "ball_gains_total": _metric(words, ("総数",), y_min=gains.cy, y_max=aerial.cy, occurrence=0),
         "ball_gains_at": _metric(words, ("AT", "AT回数"), y_min=gains.cy, y_max=aerial.cy, occurrence=0),
